@@ -2420,7 +2420,7 @@
         .text-danger { color: #D9777F !important; }
 
         /* ---------- الجداول ---------- */
-        .table-container { border: 1px solid rgba(201, 169, 106, .16); border-radius: 12px; overflow: hidden; }
+        .table-container { border: 1px solid rgba(201, 169, 106, .16); border-radius: 12px; overflow-x: auto; overflow-y: hidden; }
         table { border-collapse: collapse; }
         th {
             background: #132440; color: #D5B47E; font-weight: 700; font-size: 12.5px;
@@ -2918,7 +2918,7 @@
         }
 
         /* ---------- 6) الجداول: زي tbl قطر بالظبط ---------- */
-        .table-container { border: 1px solid rgba(201, 169, 106, .22) !important; border-radius: 14px !important; overflow: hidden; }
+        .table-container { border: 1px solid rgba(201, 169, 106, .22) !important; border-radius: 14px !important; overflow-x: auto !important; overflow-y: hidden !important; }
         .table-container table, body[data-theme="dark"] .table-container table {
             font-size: 13.5px !important;
         }
@@ -3532,7 +3532,174 @@
         .sidebar .nav-group-label { padding: 6px 12px 3px !important; }
         .sidebar .nav-group-label .ng-ar { font-size: 11.5px !important; }
         .sidebar .nav-group-label .ng-en { font-size: 8px !important; }
-    </style>
+    
+        /* ==================================================================
+           MOBILE / TABLET: HORIZONTAL SCROLL FOR WIDE CONTENT
+           (جداول، رسوم، شبكات ثابتة الأعمدة) بدل قطع المحتوى
+           ================================================================== */
+
+        /* 1) حاويات الجداول: تمرير أفقي حقيقي + لمس سلس */
+        .table-container {
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-x: contain;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(201,169,106,.55) rgba(170,182,201,.10);
+        }
+        .table-container::-webkit-scrollbar { height: 8px; }
+        .table-container::-webkit-scrollbar-track {
+            background: rgba(170,182,201,.10); border-radius: 99px;
+        }
+        .table-container::-webkit-scrollbar-thumb {
+            background: rgba(201,169,106,.55); border-radius: 99px;
+        }
+        .table-container::-webkit-scrollbar-thumb:hover { background: rgba(201,169,106,.8); }
+        .table-container table { min-width: max-content; }
+
+        /* 2) مخططات SVG: تمرير أفقي */
+        .svg-chart-container { overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
+
+        /* 3) تلميح "اسحب" يظهر فقط عند وجود تمرير */
+        .table-container[data-scrollable="1"] {
+            position: relative;
+            box-shadow: inset -18px 0 18px -18px rgba(201,169,106,.75);
+        }
+        .table-container[data-scrollable="1"]::after {
+            content: '⇆ اسحب أفقياً لعرض بقية الأعمدة';
+            position: sticky; left: 0; bottom: 0;
+            display: block; width: 100%;
+            font-size: 10.5px; font-weight: 800;
+            color: #d9bd8c; background: rgba(11,22,38,.92);
+            text-align: center; padding: 4px 0; margin-top: 2px;
+            border-radius: 0 0 10px 10px; pointer-events: none;
+        }
+
+        /* 4) الشبكات المضمّنة (inline grid) تتحول لعمود واحد على الموبايل */
+        @media (max-width: 900px) {
+            #tab-breakeven div[style*="grid-template-columns:1fr 1fr"],
+            #tab-breakeven div[style*="grid-template-columns: 1fr 1fr"] {
+                grid-template-columns: 1fr !important;
+            }
+        }
+        @media (max-width: 768px) {
+            div[style*="grid-template-columns:1fr 1fr"],
+            div[style*="grid-template-columns: 1fr 1fr"],
+            div[style*="grid-template-columns:1fr 1fr 1fr"],
+            div[style*="grid-template-columns: 1fr 1fr 1fr"],
+            div[style*="grid-template-columns:1fr 1.5fr 1fr"],
+            div[style*="grid-template-columns: 1fr 1.5fr 1fr"],
+            div[style*="grid-template-columns:1fr 1fr auto"],
+            div[style*="grid-template-columns: repeat(4, minmax(0, 1fr))"],
+            div[style*="grid-template-columns:repeat(4, minmax(0, 1fr))"],
+            div[style*="grid-template-columns: repeat(5, 1fr)"],
+            div[style*="grid-template-columns:repeat(5, 1fr)"] {
+                grid-template-columns: 1fr !important;
+            }
+            /* البطاقات والنصوص لا تتجاوز الشاشة */
+            .card, .insight-box, .metric-card, .kpi-card { max-width: 100% !important; }
+            .card-title { overflow-wrap: anywhere; }
+            /* الأزرار والأشرطة الطويلة */
+            #sa-map-svg, .sa-map-viewport { max-width: 100%; }
+        }
+
+        /* 5) لا تُقصّ البطاقات محتوى قابلًا للتمرير */
+        .card { overflow-x: visible; }
+        @media (min-width: 769px) { .card { overflow-x: visible; } }
+
+        /* على الموبايل: عرض أدنى معقول للجدول بدل max-content (يمنع دفع كل الأعمدة خارج الشاشة) */
+        @media (max-width: 900px) {
+            .table-container { scroll-padding-inline: 0; }
+            .table-container table { min-width: max(100%, 620px); }
+            #tab-income .table-container table { min-width: max(100%, 720px); }
+            #tab-growth .table-container table { min-width: max(100%, 680px); }
+            #tab-ranking .table-container table { min-width: max(100%, 720px); }
+            #tab-closure .table-container table { min-width: max(100%, 660px); }
+            #tab-advanced .table-container table { min-width: max(100%, 660px); }
+            #tab-breakeven .table-container table { min-width: max(100%, 520px); }
+            /* حشو أصغر للموبايل حتى تظهر أعمدة أكثر */
+            .table-container th, .table-container td { padding: 9px 10px !important; font-size: 11.8px !important; }
+        }
+
+        /* الموبايل: السماح بالالتفاف داخل الخلايا حتى لا يتضخم الجدول، مع عمود أول مثبّت ضيق */
+        @media (max-width: 900px) {
+            .table-container th,
+            .table-container td {
+                white-space: normal !important;
+                word-break: break-word;
+                line-height: 1.45 !important;
+            }
+            .table-container table { table-layout: auto; width: 100%; }
+            /* العمود الأول: اسم البند/الفرع — عرض محدود ليبقى ظاهراً أثناء السحب */
+            .table-container table th:first-child,
+            .table-container table td:first-child {
+                min-width: 118px;
+                max-width: 150px;
+                font-size: 11px !important;
+            }
+            /* أرقام الأعمدة تبقى على سطر واحد إن أمكن */
+            .table-container table td:not(:first-child) { white-space: nowrap !important; }
+        }
+
+        /* حماية: لا تسمح للبطاقات/الأقسام بإخفاء المحتوى أو التمدد خارج الشاشة على الموبايل */
+        @media (max-width: 900px) {
+            .tab-content, .card, .insight-box, .metric-card, .kpi-card {
+                min-width: 0 !important;
+                max-width: 100% !important;
+            }
+            .insight-box, .insight-box * { position: static !important; }
+            .grid-2, .grid-3, .kpi-grid, .advanced-grid { min-width: 0 !important; }
+            /* أي عنصر بموضع مطلق داخل المحتوى لا يخرج عن حدوده */
+            .card [style*="position:absolute"], .card [style*="position: absolute"] {
+                max-width: 100% !important;
+            }
+            table { max-width: 100%; }
+        }
+
+        /* ===== MOBILE: أولوية الأعمدة المهمة ===== */
+        @media (max-width: 900px) {
+
+            /* الترتيب: أخفِ العمود الرقمي ووصف الكفاءة الطويل، واعرض الفرع/المنطقة/المبيعات/الصافي */
+            #tab-ranking table th:nth-child(1),
+            #tab-ranking table td:nth-child(1) { display: none !important; }
+
+            #tab-ranking table th:nth-child(7),
+            #tab-ranking table td:nth-child(7) {
+                display: none !important;   /* وصف الكفاءة الطويل — متاح على الديسكتوب */
+            }
+            #tab-ranking table th:nth-child(2),
+            #tab-ranking table td:nth-child(2) { min-width: 92px; }   /* المنطقة */
+            #tab-ranking table th:nth-child(3),
+            #tab-ranking table td:nth-child(3) { min-width: 84px; }   /* الفرع */
+            #tab-ranking table th:nth-child(4),
+            #tab-ranking table td:nth-child(4) { min-width: 92px; }   /* المبيعات */
+            #tab-ranking table th:nth-child(5),
+            #tab-ranking table td:nth-child(5) { min-width: 92px; }   /* الصافي */
+            #tab-ranking table th:nth-child(6),
+            #tab-ranking table td:nth-child(6) { min-width: 70px; }   /* الهامش */
+
+            /* جدول قائمة الدخل: أخفِ عمود %Rev على الموبايل (متاح في التحليل) */
+            #tab-income table th:nth-child(8),
+            #tab-income table td:nth-child(8) { display: none !important; }
+
+            /* حجم خط مناسب للقراءة */
+            #tab-ranking table th, #tab-ranking table td,
+            #tab-income table th, #tab-income table td { font-size: 11.5px !important; }
+        }
+
+        /* ===== MOBILE FINAL: تحرير المساحة وإظهار الأرقام أولاً ===== */
+        @media (max-width: 900px) {
+            /* إزالة عمود التسلسل (م) من التخطيط لا مجرد إخفاء محتواه */
+            #tab-ranking table tr > *:nth-child(1) { display: none !important; }
+
+            /* تقليل حشو الخلية الأولى بالعناوين لتوفير مساحة أفقية */
+            #tab-ranking table th, #tab-ranking table td { padding: 8px 8px !important; }
+            #tab-income table th, #tab-income table td { padding: 8px 8px !important; }
+
+            /* منع أي جدول من تجاوز الحاوية */
+            .table-container table { max-width: none; }
+        }
+</style>
 </head>
 <body data-theme="dark">
     <!-- MOBILE MENU CONTROLS -->
@@ -7092,5 +7259,122 @@
   else init();
 })();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a58c67394cc07e8b',t:'MTc5NDM5MDczNg=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a58c67394cc07e8b',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+
+<script>
+/* ==================== SCROLLABLE-TABLE DETECTOR ====================
+   يضع data-scrollable="1" على أي جدول أوسع من حاويته، فيظهر تلميح السحب
+   ويعمل التمرير الأفقي على الموبايل والتابلت. يُعاد الحساب عند التبديل والتحجيم.
+   ==================================================================== */
+(function(){
+    function mark(scope){
+        var list = (scope||document).querySelectorAll('.table-container, .svg-chart-container');
+        list.forEach(function(c){
+            var scrollable = c.scrollWidth > c.clientWidth + 2;
+            if(scrollable) c.setAttribute('data-scrollable','1');
+            else c.removeAttribute('data-scrollable');
+        });
+    }
+    function markAll(){ mark(document); }
+    window.refreshTableScrollHints = markAll;
+
+    if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+    else init();
+
+    function init(){
+        markAll();
+        /* بعد تبديل التبويب */
+        if(typeof window.switchTab === 'function' && !window.switchTab.__scrollWrapped){
+            var old = window.switchTab;
+            var wrapped = function(ev, id){ old(ev, id); setTimeout(markAll, 60); setTimeout(markAll, 400); };
+            wrapped.__scrollWrapped = true;
+            window.switchTab = wrapped;
+        }
+        /* عند تغيير حجم النافذة / الدوران */
+        var t = null;
+        window.addEventListener('resize', function(){ clearTimeout(t); t = setTimeout(markAll, 160); });
+        window.addEventListener('orientationchange', function(){ setTimeout(markAll, 320); });
+        /* عند توليد كشف جديد */
+        if(typeof window.generateStatement === 'function' && !window.generateStatement.__scrollWrapped){
+            var g = window.generateStatement;
+            var gw = function(){ g(); setTimeout(markAll, 120); };
+            gw.__scrollWrapped = true;
+            window.generateStatement = gw;
+        }
+        setTimeout(markAll, 700);
+    }
+})();
+</script>
+
+<script>
+/* الجداول تبدأ من أول عمود (يمين) دائماً بعد كل تبديل تبويب أو توليد */
+(function(){
+    function origin(){
+        document.querySelectorAll('.table-container, .svg-chart-container').forEach(function(c){
+            if(c.scrollWidth > c.clientWidth + 2){
+                var rtl = getComputedStyle(c).direction === 'rtl';
+                c.scrollLeft = rtl ? 0 : 0;
+                if(rtl && c.scrollLeft === 0){ c.scrollLeft = 0; }
+            }
+        });
+    }
+    window.resetTableScroll = origin;
+    document.addEventListener('DOMContentLoaded', function(){ setTimeout(origin, 400); });
+    if(typeof window.switchTab === 'function' && !window.switchTab.__originWrapped){
+        var old = window.switchTab;
+        var w = function(ev,id){ old(ev,id); setTimeout(origin, 80); setTimeout(origin, 500); };
+        w.__originWrapped = true;
+        window.switchTab = w;
+    }
+})();
+</script>
+
+<script>
+/* ==================== لا يبقى التلميح العائم عالقاً ====================
+   التلميح (#chart-tooltip) ثابت الموضع (position:fixed)، فكان يظل ظاهراً
+   فوق محتوى تبويب آخر بعد تبديل التبويب أو التمرير. هنا يُخفى دائماً.
+   ==================================================================== */
+(function(){
+    var tip = document.getElementById('chart-tooltip');
+
+    function hideTip(){
+        if(!tip) return;
+        tip.classList.remove('show');
+        tip.innerHTML = '';
+        tip.style.left = '-9999px';
+        tip.style.top = '-9999px';
+    }
+    window.hideChartTooltip = hideTip;
+
+    /* إخفاء عند التمرير */
+    window.addEventListener('scroll', hideTip, {passive:true, capture:true});
+    /* إخفاء عند خروج المؤشر من الصفحة */
+    document.addEventListener('mouseleave', hideTip);
+    /* إخفاء عند لمس الشاشة (موبايل لا يوجد hover) */
+    document.addEventListener('touchstart', hideTip, {passive:true});
+    /* إخفاء عند النقر */
+    document.addEventListener('click', function(){ setTimeout(hideTip, 0); }, true);
+
+    /* إخفاء عند تبديل التبويب */
+    function wrap(){
+        if(typeof window.switchTab === 'function' && !window.switchTab.__tipWrapped){
+            var old = window.switchTab;
+            var w = function(ev,id){ hideTip(); var r = old.apply(this, arguments); hideTip(); setTimeout(hideTip, 120); setTimeout(hideTip, 600); return r; };
+            w.__tipWrapped = true;
+            window.switchTab = w;
+        }
+    }
+    wrap();
+
+    /* إخفاء احتياطي: إن لم يكن المؤشر فوق شريط، أزل .show */
+    setInterval(function(){
+        if(!tip || !tip.classList.contains('show')) return;
+        var bars = document.querySelectorAll('.monthly-anim-bar:hover, .chart-dot:hover');
+        if(bars.length === 0 && !document.querySelector('#chart-tooltip:hover')) hideTip();
+    }, 900);
+
+    if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', hideTip);
+    else hideTip();
+})();
+</script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a58ce7b09e74e1b7',t:'MTc5NDM5NTk5OA=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a58ce7b09e74e1b7',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
